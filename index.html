@@ -142,6 +142,48 @@
             }
         }
 
+        function loadImage(url) {
+            return new Promise((resolve, reject) => {
+                let img = new Image()
+
+                let imgLoad = new Promise((resolve, reject) => {
+                    img.onload = resolve;
+                    img.onerror = reject;
+                })
+
+                img.src = url
+
+                // wait for the image to load
+                imgLoad.then(() => {
+                    let canvas = document.createElement('canvas');
+                    let ctx = canvas.getContext('2d', { willReadFrequently: true });
+                    ctx.drawImage(img, 0, 0);
+
+                    let imageData = ctx.getImageData(0, 0, img.width, img.height);
+
+                    resolve(imageData);
+                });
+            });
+        }
+
+        var dog = null;
+
+        loadImage("dog.png").then((imageData) => {
+            dog = imageData;
+            // const width = imageData.width;
+            // const height = imageData.height;
+
+            // const x = xCenter - width / 2;
+            // const y = yCenter - height / 2;
+
+            // for (let i = 0; i < imageData.data.length; i += 4) {
+            //     const r = imageData.data[i];
+            //     if (r === 0) {
+            //         draw(x + (i / 4) % width, y + Math.floor((i / 4) / width));
+            //     }
+            // }
+        });
+
         var lastFrameTime = 0;
         var avgDelta = 0;
         var elapsed = 0;
@@ -158,25 +200,47 @@
             fill("green")
             // drawString(fpsString, xCenter * 2 - fpsWidth + 1, yCenter * 2 - 4);
 
-            const its = 40;
-            for(var i = 0; i < its; i++) {
-                const n = i * Math.PI / its * 2;
 
-                fill("red")
-                const xOffset = Math.sin(elapsed / 1000 + n) * 20;
-                const yOffset = Math.cos(elapsed / 1000 + n) * 40;
-                // const alpha = 0.9 + xOffset / 30;
-                const alpha = 1.0;
-                const r = ((n * its)) % 255;
-                const g = ((n * its) + 85) % 255;
-                const b = ((n * its) + 85 + 85) % 255;
-                
-                fill("rgba(" + r + ", " + g + ", " + b + ", " + alpha + ")");
 
-                // fill("rgba(255, 0, 0, " + alpha + ")");
+            fill("red")
+            // const alpha = 0.9 + xOffset / 30;
+            const alpha = 1.0;
+            drawString("GOOD DOG!", xCenter - (7*4/2) + 0.0, yCenter - 2 + 0.0);
 
-                drawString("GOOD DOG!", xCenter - (7*4/2) + xOffset, yCenter - 2 + yOffset);
+            // draw dog
+
+            
+
+
+
+            if (dog) {
+
+                for(var i = 0; i < 3; i++) {
+
+                    const width = dog.width;
+                    const height = dog.height;
+                    const dogScale = Math.pow(((elapsed) * 0.002 + i * 3) % 9.0, 2);
+
+                    const x = xCenter / dogScale - (width / 2);
+                    const y = yCenter / dogScale - (height / 2);
+
+                    
+                    ctx.translate(canvas.width / 2, canvas.height / 2);
+                    ctx.rotate(delta * 0.0005);
+                    ctx.translate(-canvas.width / 2, -canvas.height / 2);
+
+                    for (let i = 0; i < dog.data.length; i += 4) {
+                        const r = dog.data[i];
+                        if (r === 0) {
+                            var x2 = x + (i / 4) % width;
+                            var y2 = y + Math.floor((i / 4) / width);
+                            ctx.fillRect(x2 * scaleX * dogScale, y2 * scaleY * dogScale, scaleX * dogScale, scaleY * dogScale);
+                        }
+                    }
+                    
+                }
             }
+
 
             requestAnimationFrame(loop);
         }
