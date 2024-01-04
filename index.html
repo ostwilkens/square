@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        html {
+            font-family: sans-serif;
+            background: #202020;
+            color: white;
+            display: flex;
+            min-height: 100%;
+        }
+
+        body {
+            flex-grow: 1;
+            display: flex;
+            margin: 0;
+        }
+
+        #canvas {
+            image-rendering: pixelated;
+            flex-grow: 1;
+            aspect-ratio: unset;
+            height: 100vh;
+            width: 100vw;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="canvas"></canvas>
+    <script async>
+        const canvas = document.getElementById("canvas");
+        const ctx = canvas.getContext("2d");
+        ctx.fillStyle = "white";
+        ctx.imageSmoothingEnabled = false
+
+        const resolution = 100;
+        var xCenter = 0;
+        var yCenter = 0;
+        var scaleX = 1;
+        var scaleY = 1;
+
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            var ratio = window.innerWidth / window.innerHeight;
+            scaleX = window.innerWidth / resolution;
+            scaleY = window.innerHeight / resolution;
+            if (ratio > 1) {
+                scaleX = scaleY;
+            } else {
+                scaleY = scaleX;
+            }
+
+            xCenter = canvas.width / 2.0 / scaleX;
+            yCenter = canvas.height / 2.0 / scaleY;
+        }
+
+        window.addEventListener("resize", resize);
+        resize()
+        
+        var characters = {};
+
+        async function loadFont() {
+            let characters = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ.!'
+            let characterBitmaps = {}
+            let img = new Image()
+            // img.crossOrigin = "anonymous"; // To handle CORS
+
+            let imgLoad = new Promise((resolve, reject) => {
+                img.onload = resolve;
+                img.onerror = reject;
+            })
+
+            img.src = 'font.png'
+
+            // wait for the image to load
+            await imgLoad;
+
+            let canvas = document.createElement('canvas');
+            let ctx = canvas.getContext('2d', { willReadFrequently: true });
+            ctx.drawImage(img, 0, 0);
+
+            let imageData = ctx.getImageData(0, 0, img.width, img.height);
+
+            let charWidth = 3;
+            let charHeight = 4;
+            let charactersPerLine = 10;
+
+            for(let i = 0; i < characters.length; i++) {
+                let x = (i % charactersPerLine) * (charWidth + 1);
+                let y = Math.floor(i / charactersPerLine) * (charHeight + 1);
+
+                let charImageData = ctx.getImageData(x, y, charWidth, charHeight);
+                characterBitmaps[characters[i]] = charImageData;
+            }
+
+            return characterBitmaps;
+        }
+
+        loadFont().then((font) => {
+            characters = font;
+        });
+
+        function draw(x, y) {
+            ctx.fillRect(x * scaleX, y * scaleY, scaleX, scaleY);
+        }
+
+        function fill(color) {
+            ctx.fillStyle = color;
+        }
+
+        function drawCharacter(character, x, y) {
+            const imageData = characters[character];
+
+            if (!imageData) {
+                return;
+            }
+
+            for (let i = 0; i < imageData.data.length; i += 4) {
+                const r = imageData.data[i];
+                if (r === 0) {
+                    draw(x + (i / 4) % imageData.width, y + Math.floor((i / 4) / imageData.width));
+                }
+            }
+        }
+
+        function drawString(string, x, y) {
+            // ensure string
+            string = string + "";
+
+            // ensure uppercase
+            string = string.toUpperCase();
+
+            for (let i = 0; i < string.length; i++) {
+                drawCharacter(string[i], x + i * 4, y);
+            }
+        }
+
+        var lastFrameTime = 0;
+        var avgDelta = 0;
+        var elapsed = 0;
+        function loop(timestamp) {
+            let delta = timestamp - lastFrameTime;
+            avgDelta = (avgDelta * 0.9) + (delta * 0.1);
+            lastFrameTime = timestamp;
+            elapsed += delta;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const fpsString = (1000 / avgDelta).toFixed(0) + "fps";
+            const fpsWidth = fpsString.length * 4;
+            fill("green")
+            // drawString(fpsString, xCenter * 2 - fpsWidth + 1, yCenter * 2 - 4);
+
+            const its = 40;
+            for(var i = 0; i < its; i++) {
+                const n = i * Math.PI / its * 2;
+
+                fill("red")
+                const xOffset = Math.sin(elapsed / 1000 + n) * 20;
+                const yOffset = Math.cos(elapsed / 1000 + n) * 40;
+                // const alpha = 0.9 + xOffset / 30;
+                const alpha = 1.0;
+                const r = ((n * its)) % 255;
+                const g = ((n * its) + 85) % 255;
+                const b = ((n * its) + 85 + 85) % 255;
+                
+                fill("rgba(" + r + ", " + g + ", " + b + ", " + alpha + ")");
+
+                // fill("rgba(255, 0, 0, " + alpha + ")");
+
+                drawString("GOOD DOG!", xCenter - (7*4/2) + xOffset, yCenter - 2 + yOffset);
+            }
+
+            requestAnimationFrame(loop);
+        }
+
+        requestAnimationFrame(loop);
+    </script>
+</body>
+
+</html>
