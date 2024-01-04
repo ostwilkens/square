@@ -155,28 +155,31 @@
 
             const fpsString = (1000 / avgDelta).toFixed(0) + "fps";
             const fpsWidth = fpsString.length * 4;
-            fill("green")
+            fill("red")
             // drawString(fpsString, xCenter * 2 - fpsWidth + 1, yCenter * 2 - 4);
 
-            const its = 40;
-            for(var i = 0; i < its; i++) {
-                const n = i * Math.PI / its * 2;
+            drawString("GOOD DOG!", 0, 0);
 
-                fill("red")
-                const xOffset = Math.sin(elapsed / 1000 + n) * 20;
-                const yOffset = Math.cos(elapsed / 1000 + n) * 40;
-                // const alpha = 0.9 + xOffset / 30;
-                const alpha = 1.0;
-                const r = ((n * its)) % 255;
-                const g = ((n * its) + 85) % 255;
-                const b = ((n * its) + 85 + 85) % 255;
+
+            // const its = 40;
+            // for(var i = 0; i < its; i++) {
+            //     const n = i * Math.PI / its * 2;
+
+            //     fill("red")
+            //     const xOffset = Math.sin(elapsed / 1000 + n) * 20;
+            //     const yOffset = Math.cos(elapsed / 1000 + n) * 40;
+            //     // const alpha = 0.9 + xOffset / 30;
+            //     const alpha = 1.0;
+            //     const r = ((n * its)) % 255;
+            //     const g = ((n * its) + 85) % 255;
+            //     const b = ((n * its) + 85 + 85) % 255;
                 
-                fill("rgba(" + r + ", " + g + ", " + b + ", " + alpha + ")");
+            //     fill("rgba(" + r + ", " + g + ", " + b + ", " + alpha + ")");
 
-                // fill("rgba(255, 0, 0, " + alpha + ")");
+            //     // fill("rgba(255, 0, 0, " + alpha + ")");
 
-                drawString("GOOD DOG!", xCenter - (7*4/2) + xOffset, yCenter - 2 + yOffset);
-            }
+            //     drawString("GOOD DOG!", xCenter - (7*4/2) + xOffset, yCenter - 2 + yOffset);
+            // }
 
             requestAnimationFrame(loop);
         }
